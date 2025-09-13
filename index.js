@@ -8,21 +8,37 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Simple health check
+// In-memory event storage
+let events = [
+  { id: 1, title: "Meeting with Alex", date: "2025-09-16", startTime: "10:00", endTime: "11:30", description: "Discuss project status" },
+  { id: 2, title: "Doctor", date: "2025-09-17", startTime: "15:00", endTime: "16:00", description: "Checkup" },
+];
+
+// Health check
 app.get("/", (req, res) => {
   res.send("Calendar backend is running!");
 });
 
-// Example endpoint: list events
-let events = [
-  { id: 1, title: "Meeting", date: "2025-09-13" },
-  { id: 2, title: "Doctor", date: "2025-09-14" },
-];
-
+// Get events (optionally by date range)
 app.get("/events", (req, res) => {
+  const { start, end } = req.query;
+
+  if (start && end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const filteredEvents = events.filter(e => {
+      const eventDate = new Date(e.date);
+      return eventDate >= startDate && eventDate <= endDate;
+    });
+
+    return res.json(filteredEvents);
+  }
+
   res.json(events);
 });
 
+// Add new event
 app.post("/events", (req, res) => {
   const newEvent = { id: events.length + 1, ...req.body };
   events.push(newEvent);
