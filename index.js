@@ -54,6 +54,43 @@ app.post("/events", (req, res) => {
 
   res.status(201).json(newEvent);
 });
+// ✨ Update (edit) event
+app.put("/events/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  console.log(`PUT /events/${id} body:`, req.body);
+
+  const index = events.findIndex(ev => ev.id === id);
+  if (index === -1) {
+    console.warn(`Event with id ${id} not found`);
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const { title, date, startTime, endTime, description } = req.body;
+  if (!title || !date || !startTime || !endTime) {
+    console.warn("Invalid update, missing required fields");
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  events[index] = { ...events[index], title, date, startTime, endTime, description };
+  console.log("Event updated:", events[index]);
+  res.json(events[index]);
+});
+
+// ✨ Delete event
+app.delete("/events/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  console.log(`DELETE /events/${id}`);
+
+  const index = events.findIndex(ev => ev.id === id);
+  if (index === -1) {
+    console.warn(`Event with id ${id} not found`);
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const deleted = events.splice(index, 1);
+  console.log("Event deleted:", deleted[0]);
+  res.json(deleted[0]);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
